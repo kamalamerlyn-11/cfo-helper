@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFO Helper — Your Financial Co-Pilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FDF9EE; --card:#FFFDF7; --ink:#3E2418; --muted:#7A6559; --line:#EADFCB;
+    --brown:#7E4535; --orange:#E8873A; --orange-soft:#F7D9B8; --green:#3F7D4E; --red:#B4412F;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,system-ui,sans-serif;font-size:14px}
+  h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  header h1{font-size:34px}
+  header p{margin:4px 0 0;color:var(--muted);font-family:Marcellus,serif;font-size:17px}
+  .live{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;user-select:none}
+  .dot{width:9px;height:9px;border-radius:50%;background:#bbb}
+  .live.on .dot{background:var(--green);box-shadow:0 0 0 0 rgba(63,125,78,.6);animation:pulse 1.6s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(63,125,78,0)}100%{box-shadow:0 0 0 0 rgba(63,125,78,0)}}
+  .personas{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .persona{background:var(--brown);color:#FFF6EA;border-radius:10px;padding:13px 15px;cursor:pointer;border:2px solid transparent;transition:.15s}
+  .persona:hover{transform:translateY(-1px)}
+  .persona.active{border-color:var(--orange);box-shadow:0 4px 14px rgba(126,69,53,.25)}
+  .persona h3{font-size:17px;margin-bottom:5px}
+  .persona p{margin:0;font-size:12.5px;opacity:.9}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h2{font-size:20px;margin-bottom:12px}
+  .slider{margin-bottom:13px}
+  .slider .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+  .slider .top b{font-weight:600}
+  .slider .top span{color:var(--brown);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--orange)}
+  .sep{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;border-top:1px dashed var(--line);padding-top:12px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+  .kpi .l{font-size:12px;color:var(--muted)}
+  .kpi .v{font-family:Marcellus,serif;font-size:27px;margin-top:3px}
+  .kpi .d{font-size:12px;margin-top:2px}
+  .good{color:var(--green)} .bad{color:var(--red)}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+  #chart{width:100%;height:250px;display:block}
+  .forecast{margin-top:10px;background:#FBF1E2;border-left:3px solid var(--orange);padding:10px 12px;border-radius:6px;line-height:1.55}
+  .lower{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-top:18px}
+  .chat{display:flex;flex-direction:column;height:430px}
+  .msgs{flex:1;overflow:auto;padding-right:4px}
+  .msg{margin:0 0 10px;padding:9px 12px;border-radius:10px;line-height:1.5;white-space:pre-wrap}
+  .msg.u{background:var(--brown);color:#fff;margin-left:40px}
+  .msg.a{background:#F6EBDB;margin-right:20px}
+  .tool{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--brown);background:#FFF;border:1px dashed var(--orange-soft);padding:5px 9px;border-radius:7px;margin:0 20px 8px 0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .chip{font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;cursor:pointer;color:var(--ink)}
+  .chip:hover{border-color:var(--orange)}
+  form{display:flex;gap:8px}
+  form input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff}
+  button{font:inherit;border:0;border-radius:9px;padding:10px 14px;background:var(--orange);color:#fff;font-weight:600;cursor:pointer}
+  button.ghost{background:transparent;color:var(--brown);border:1px solid var(--line)}
+  button:disabled{opacity:.5;cursor:default}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td{padding:7px 0;border-bottom:1px solid var(--line)}
+  td:last-child{text-align:right;font-weight:600}
+  .total td{border-bottom:0;font-size:15px;color:var(--brown)}
+  .note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+  .report{display:none;margin-top:12px}
+  .report pre{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;max-height:210px;overflow:auto;margin:0 0 8px}
+  footer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center}
+  @media (max-width:900px){.grid,.lower{grid-template-columns:1fr}.personas{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr 1fr}}
+  @media (max-width:520px){.kpis{grid-template-columns:1fr}header h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>CFO Helper</h1>
+      <p>Your Financial Co-Pilot — turn “What If” into “What Works”</p>
+    </div>
+    <div class="live on" id="liveToggle" title="Streams simulated revenue and expense updates every few seconds"><span class="dot"></span><span id="liveLabel">Live data stream: ON</span></div>
+  </header>
+
+  <div class="personas" id="personas"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Adjust inputs</h2>
+      <div id="sliders"></div>
+      <button class="ghost" id="resetBtn" style="width:100%;margin-top:4px">Reset to baseline</button>
+    </div>
+
+    <div>
+      <div class="kpis">
+        <div class="kpi"><div class="l">Runway</div><div class="v" id="kRunway">–</div><div class="d" id="dRunway"></div></div>
+        <div class="kpi"><div class="l">Monthly net (month 1)</div><div class="v" id="kNet">–</div><div class="d" id="dNet"></div></div>
+        <div class="kpi"><div class="l">Cash after 12 months</div><div class="v" id="kCash">–</div><div class="d" id="dCash"></div></div>
+      </div>
+      <div class="card">
+        <div class="legend"><span><i style="background:var(--orange)"></i>Your scenario</span><span><i style="background:#C9B7A3"></i>Baseline (no changes)</span><span><i style="background:var(--red);height:1px"></i>₹0 line</span></div>
+        <svg id="chart" viewBox="0 0 760 250" preserveAspectRatio="none"></svg>
+        <div class="forecast" id="forecast"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="card chat">
+      <h2>Ask the CFO agent</h2>
+      <div class="msgs" id="msgs">
+        <div class="msg a">Hi! I'm your CFO agent. Ask me a what-if question in plain English. I'll run the numbers with my simulation tools and can update the sliders for you.</div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <form id="askForm"><input id="askInput" placeholder="e.g. If I hire 2 engineers, can we survive 6 months?" autocomplete="off"><button id="askBtn">Ask</button></form>
+    </div>
+
+    <div class="card">
+      <h2>Usage &amp; billing</h2>
+      <table>
+        <tr><td>Scenarios simulated <span class="note">(₹2 each)</span></td><td id="uScen">0</td></tr>
+        <tr><td>Reports exported <span class="note">(₹10 each)</span></td><td id="uRep">0</td></tr>
+        <tr class="total"><td>Current bill</td><td id="uBill">₹0</td></tr>
+      </table>
+      <p class="note">Usage-based billing, metered per scenario and per report (Flexprice-style). Demo meter, no real charges.</p>
+      <button id="reportBtn" style="width:100%;margin-top:6px">Generate shareable report</button>
+      <div class="report" id="report"><pre id="reportText"></pre><button class="ghost" id="copyBtn" style="width:100%">Copy report</button></div>
+    </div>
+  </div>
+
+  <footer>CFO Helper · Team leader: Chunduru Kamala Merlyn · Acharya Nagarjuna University · Forecasts use simple assumptions and are for planning only.</footer>
+</div>
+
+<script>
+const PERSONAS = {
+  founder:{name:"Startup Founder", q:"Can I hire two more engineers and still survive for six months?",
+    base:{cash:3000000, revenue:400000, expenses:600000, growth:5, hires:0, salary:100000, marketing:0, price:0},
+    ask:["If I hire 2 engineers, can we survive 6 months?","How much revenue growth do I need to break even in a year?"]},
+  fest:{name:"Student Fest Organizer", q:"If we spend ₹10,000 extra on marketing, what's left for prizes?",
+    base:{cash:150000, revenue:40000, expenses:30000, growth:0, hires:0, salary:5000, marketing:0, price:0},
+    ask:["If we spend ₹10,000 extra on marketing, what's left for prizes?","Can we afford 2 paid volunteers at ₹5,000 each?"]},
+  shop:{name:"Small Business Owner", q:"What happens to my profit if I increase product prices by 10%?",
+    base:{cash:500000, revenue:300000, expenses:240000, growth:2, hires:0, salary:20000, marketing:0, price:0},
+    ask:["What happens to my profit if I increase prices by 10%?","Should I hire one more staff member?"]}
+};
+const FIELDS = [
+  {k:"cash", l:"Cash in bank", money:true, sec:"Current position"},
+  {k:"revenue", l:"Monthly revenue", money:true},
+  {k:"expenses", l:"Monthly expenses", money:true},
+  {k:"growth", l:"Revenue growth / month", unit:"%", min:-10, max:20, step:1},
+  {k:"hires", l:"New hires", min:0, max:10, step:1, sec:"What if…"},
+  {k:"salary", l:"Salary per new hire / month", money:true},
+  {k:"marketing", l:"Extra marketing / month", money:true},
+  {k:"price", l:"Price change", unit:"%", min:-30, max:30, step:1},
+];
+const ELASTICITY = 0.5;      // 10% price rise loses 5% of sales
+const MKT_ROI = 1.2;          // each ₹1 of extra marketing brings ₹1.2 revenue from month 2
+
+let personaKey = "founder";
+let base = {...PERSONAS.founder.base};
+let state = {...base};
+let usage = {scenarios:0, reports:0};
+
+const inr = n => (n<0?"-":"") + "₹" + Math.round(Math.abs(n)).toLocaleString("en-IN");
+const short = n => { const a=Math.abs(n), s=n<0?"-":""; if(a>=1e7) return s+"₹"+(a/1e7).toFixed(1)+"Cr"; if(a>=1e5) return s+"₹"+(a/1e5).toFixed(1)+"L"; if(a>=1e3) return s+"₹"+(a/1e3).toFixed(0)+"k"; return s+"₹"+Math.round(a); };
+
+function simulate(p, months=36){
+  let cash=p.cash, series=[cash], runway=null;
+  const priceFactor=(1+p.price/100)*(1-ELASTICITY*p.price/100);
+  let firstNet=null;
+  for(let m=1;m<=months;m++){
+    const rev=p.revenue*priceFactor*Math.pow(1+p.growth/100,m-1)+(m>=2?p.marketing*MKT_ROI:0);
+    const exp=p.expenses+p.hires*p.salary+p.marketing;
+    const net=rev-exp; if(firstNet===null) firstNet=net;
+    cash+=net; series.push(cash);
+    if(runway===null && cash<0) runway=m-1+ (cash-net)/(-net); // fractional month when cash hits 0
+  }
+  return {series:series.slice(0,13), runway, firstNet, cash12:series[12]};
+}
+function runwayText(r){ return r===null ? "36+ months" : (r<1?"under 1 month": r.toFixed(1)+" months"); }
+
+// ---------- UI build ----------
+function buildPersonas(){
+  const el=document.getElementById("personas"); el.innerHTML="";
+  for(const [k,p] of Object.entries(PERSONAS)){
+    const d=document.createElement("div"); d.className="persona"+(k===personaKey?" active":"");
+    d.innerHTML=`<h3>${p.name}</h3><p>${p.q}</p>`;
+    d.onclick=()=>loadPersona(k); el.appendChild(d);
+  }
+}
+function rangeFor(f){
+  if(!f.money) return {min:f.min,max:f.max,step:f.step};
+  const b=Math.max(base[f.k], f.k==="marketing"? base.revenue*0.25 : base.revenue*0.2, 1000);
+  const max=f.k==="marketing"? Math.round(b*2) : Math.round(b*3);
+  const step=Math.max(500, Math.pow(10, Math.floor(Math.log10(max))-2));
+  return {min:0,max,step};
+}
+function buildSliders(){
+  const el=document.getElementById("sliders"); el.innerHTML="";
+  for(const f of FIELDS){
+    if(f.sec){ const s=document.createElement("div"); s.className="sep"; s.textContent=f.sec; if(f.k==="cash") s.style.cssText="margin-top:0;border-top:0;padding-top:0"; el.appendChild(s); }
+    const r=rangeFor(f);
+    const w=document.createElement("div"); w.className="slider";
+    w.innerHTML=`<div class="top"><b>${f.l}</b><span id="v_${f.k}"></span></div><input type="range" id="s_${f.k}" min="${r.min}" max="${r.max}" step="${r.step}">`;
+    el.appendChild(w);
+    const inp=w.querySelector("input"); inp.value=state[f.k];
+    inp.oninput=()=>{ state[f.k]=Number(inp.value); render(); };
+    inp.onchange=()=>countScenario();
+  }
+}
+function syncSliders(){
+  for(const f of FIELDS){
+    const inp=document.getElementById("s_"+f.k);
+    if(Number(inp.max)<state[f.k]) inp.max=Math.ceil(state[f.k]*1.5);
+    inp.value=state[f.k];
+  }
+}
+function loadPersona(k){
+  personaKey=k; base={...PERSONAS[k].base}; state={...base};
+  buildPersonas(); buildSliders(); buildChips(); render();
+}
+
+// ---------- render ----------
+function render(){
+  for(const f of FIELDS){
+    const v=state[f.k];
+    document.getElementById("v_"+f.k).textContent = f.money? inr(v) : (f.unit? (v>0&&f.k!=="growth"?"+":"")+v+f.unit : v);
+  }
+  const sc=simulate(state), bl=simulate(base);
+  const kR=document.getElementById("kRunway");
+  kR.textContent=runwayText(sc.runway);
+  kR.className="v "+(sc.runway===null||sc.runway>=12?"good":sc.runway<6?"bad":"");
+  document.getElementById("dRunway").textContent="Baseline: "+runwayText(bl.runway);
+  const kN=document.getElementById("kNet"); kN.textContent=short(sc.firstNet); kN.className="v "+(sc.firstNet>=0?"good":"bad");
+  document.getElementById("dNet").textContent=sc.firstNet>=0?"Profit each month":"Burning cash each month";
+  const kC=document.getElementById("kCash"); kC.textContent=short(sc.cash12); kC.className="v "+(sc.cash12>=0?"good":"bad");
+  const diff=sc.cash12-bl.cash12;
+  document.getElementById("dCash").innerHTML=(diff===0?"Same as baseline":`<span class="${diff>0?"good":"bad"}">${diff>0?"+":""}${short(diff)}</span> vs baseline`);
+  drawChart(sc.series, bl.series);
+  document.getElementById("forecast").innerHTML=forecastText(sc,bl);
+}
+function forecastText(sc,bl){
+  const p=state, changes=[];
+  if(p.hires) changes.push(`hiring ${p.hires} ${p.hires>1?"people":"person"} at ${inr(p.salary)}/month`);
+  if(p.marketing) changes.push(`spending ${inr(p.marketing)} extra on marketing each month`);
+  if(p.price) changes.push(`${p.price>0?"raising":"cutting"} prices by ${Math.abs(p.price)}%`);
+  for(const k of ["cash","revenue","expenses","growth"]) if(p[k]!==base[k]) changes.push(`${FIELDS.find(f=>f.k===k).l.toLowerCase()} at ${k==="growth"?p[k]+"%":inr(p[k])}`);
+  const what = changes.length? "With "+changes.join(", ")+", " : "With no changes, ";
+  let verdict;
+  if(sc.runway===null) verdict=`you stay cash-positive for at least 3 years and end month 12 with <b>${inr(sc.cash12)}</b>.`;
+  else verdict=`your cash runs out in about <b>${runwayText(sc.runway)}</b>${sc.runway<6?" — that's under 6 months, so this is risky.":sc.runway<12?". That covers 6 months but not a full year.":"."}`;
+  return what+verdict;
+}
+function drawChart(s,b){
+  const svg=document.getElementById("chart"), W=760,H=250,pl=58,pr=12,pt=12,pb=26;
+  const all=[...s,...b,0], mx=Math.max(...all), mn=Math.min(...all), span=(mx-mn)||1;
+  const X=i=>pl+i*(W-pl-pr)/12, Y=v=>pt+(mx-v)*(H-pt-pb)/span;
+  let g="";
+  for(let t=0;t<=4;t++){ const v=mn+span*t/4, y=Y(v); g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#EFE6D6"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#7A6559">${short(v)}</text>`; }
+  for(let i=0;i<=12;i+=2) g+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="10.5" fill="#7A6559">${i===0?"Now":"M"+i}</text>`;
+  g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(0)}" y2="${Y(0)}" stroke="#B4412F" stroke-width="1" stroke-dasharray="4 3"/>`;
+  const path=a=>a.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+","+Y(v).toFixed(1)).join("");
+  const area=path(s)+`L${X(12)},${Y(Math.max(mn,0))}L${X(0)},${Y(Math.max(mn,0))}Z`;
+  g+=`<path d="${area}" fill="#F7D9B8" opacity=".45"/>`;
+  g+=`<path d="${path(b)}" fill="none" stroke="#C9B7A3" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g+=`<path d="${path(s)}" fill="none" stroke="#E8873A" stroke-width="2.6" stroke-linejoin="round"/>`;
+  s.forEach((v,i)=>{ g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="2.6" fill="${v<0?"#B4412F":"#E8873A"}"><title>${i===0?"Now":"Month "+i}: ${inr(v)}</title></circle>`; });
+  svg.innerHTML=g;
+}
+
+// ---------- usage / billing ----------
+function renderUsage(){
+  document.getElementById("uScen").textContent=usage.scenarios;
+  document.getElementById("uRep").textContent=usage.reports;
+  document.getElementById("uBill").textContent=inr(usage.scenarios*2+usage.reports*10);
+}
+function countScenario(){ usage.scenarios++; renderUsage(); }
+
+document.getElementById("resetBtn").onclick=()=>{ state={...base}; syncSliders(); render(); };
+document.getElementById("reportBtn").onclick=()=>{
+  const sc=simulate(state), bl=simulate(base);
+  const lines=[
+    "CFO HELPER — SCENARIO REPORT", `Profile: ${PERSONAS[personaKey].name}`, `Date: ${new Date().toLocaleDateString("en-IN")}`, "",
+    "INPUTS", ...FIELDS.map(f=>`  ${f.l}: ${f.money?inr(state[f.k]):state[f.k]+(f.unit||"")}`), "",
+    "RESULTS", `  Runway: ${runwayText(sc.runway)} (baseline ${runwayText(bl.runway)})`,
+    `  Monthly net in month 1: ${inr(sc.firstNet)}`, `  Cash after 12 months: ${inr(sc.cash12)} (baseline ${inr(bl.cash12)})`, "",
+    "SUMMARY", "  "+forecastText(sc,bl).replace(/<[^>]+>/g,""), "",
+    `Assumptions: a price rise loses half as much in sales volume (${ELASTICITY} elasticity); extra marketing returns ₹${MKT_ROI} per ₹1 from month 2.`
+  ];
+  document.getElementById("reportText").textContent=lines.join("\n");
+  document.getElementById("report").style.display="block";
+  usage.reports++; renderUsage();
+};
+document.getElementById("copyBtn").onclick=async e=>{
+  try{ await navigator.clipboard.writeText(document.getElementById("reportText").textContent); e.target.textContent="Copied ✓"; }
+  catch{ e.target.textContent="Select the text above to copy"; }
+  setTimeout(()=>e.target.textContent="Copy report",1800);
+};
+
+// ---------- live data stream (simulated, Pathway-style) ----------
+let live=true, liveTimer=null;
+function tick(){
+  // small random movements in actual revenue and expenses, as if new transactions arrived
+  const jr=1+(Math.random()-0.5)*0.03, je=1+(Math.random()-0.5)*0.02;
+  base.revenue=Math.round(base.revenue*jr/100)*100; base.expenses=Math.round(base.expenses*je/100)*100;
+  state.revenue=Math.round(state.revenue*jr/100)*100; state.expenses=Math.round(state.expenses*je/100)*100;
+  syncSliders(); render();
+}
+function setLive(on){
+  live=on; clearInterval(liveTimer);
+  document.getElementById("liveToggle").classList.toggle("on",on);
+  document.getElementById("liveLabel").textContent="Live data stream: "+(on?"ON":"OFF");
+  if(on) liveTimer=setInterval(tick,3000);
+}
+document.getElementById("liveToggle").onclick=()=>setLive(!live);
+
+// ---------- AI agent ----------
+const msgs=document.getElementById("msgs");
+function addMsg(cls,text){ const d=document.createElement("div"); d.className=cls; d.textContent=text; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; return d; }
+function buildChips(){
+  const el=document.getElementById("chips"); el.innerHTML="";
+  for(const q of PERSONAS[personaKey].ask){ const c=document.createElement("button"); c.type="button"; c.className="chip"; c.textContent=q; c.onclick=()=>ask(q); el.appendChild(c); }
+}
+const PARAM_SCHEMA={type:"object",properties:{
+  cash:{type:"number",description:"Cash in bank (₹)"}, revenue:{type:"number",description:"Monthly revenue (₹)"},
+  expenses:{type:"number",description:"Current monthly expenses (₹), before new hires/marketing"},
+  growth:{type:"number",description:"Monthly revenue growth %"}, hires:{type:"number",description:"Number of NEW hires"},
+  salary:{type:"number",description:"Monthly salary per new hire (₹)"}, marketing:{type:"number",description:"EXTRA marketing spend per month (₹)"},
+  price:{type:"number",description:"Price change in % (e.g. 10 for +10%)"}}};
+function clean(input){ const o={}; for(const f of FIELDS) if(typeof input?.[f.k]==="number" && isFinite(input[f.k])) o[f.k]=input[f.k]; return o; }
+function summary(p){ const r=simulate(p); return {runway_months: r.runway===null?"36+":Number(r.runway.toFixed(1)), monthly_net_month1:Math.round(r.firstNet), cash_after_12_months:Math.round(r.cash12), cash_by_month:r.series.map(Math.round)}; }
+const TOOLS=[
+  {name:"get_current_plan", description:"Get the user's current inputs (sliders) and baseline, plus the simulated results for both.",
+   execute:()=>({profile:PERSONAS[personaKey].name, baseline_inputs:base, current_inputs:state, baseline_results:summary(base), current_results:summary(state)})},
+  {name:"simulate_scenario", description:"Run a what-if simulation. Pass ONLY the inputs you want to change; others are taken from the current plan. Does not change the sliders.",
+   inputSchema:PARAM_SCHEMA,
+   execute:(input)=>{ const ch=clean(input); const p={...state,...ch}; showTool("simulate_scenario",ch); countScenario(); return {inputs_used:p, results:summary(p)}; }},
+  {name:"apply_scenario", description:"Update the dashboard sliders to a scenario so the user can see it on the chart. Pass only the inputs to change. Use this for the scenario your answer is about.",
+   inputSchema:PARAM_SCHEMA,
+   execute:(input)=>{ const ch=clean(input); showTool("apply_scenario",ch); Object.assign(state,ch); syncSliders(); render(); return {ok:true, now_showing:summary(state)}; }},
+];
+function showTool(name,args){ const d=document.createElement("div"); d.className="tool"; d.textContent="🔧 "+name+"("+Object.entries(args).map(([k,v])=>k+"="+v).join(", ")+")"; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
+const SYSTEM=`You are CFO Helper, a friendly financial co-pilot agent inside a budgeting dashboard for Indian startup founders, student fest organisers and small business owners.
+Always answer what-if questions by calling your tools — never guess numbers. Usually: call get_current_plan, then simulate_scenario for the what-if (and alternatives if useful), then apply_scenario with the main scenario so the user sees it on the chart.
+Model assumptions you can mention: a price rise loses half as much in sales volume (elasticity 0.5); extra marketing returns ₹1.2 per ₹1 from month 2. Fest questions: treat "prizes" money as the cash left after spending.
+Reply in 2–5 short sentences in plain English with ₹ amounts in Indian format (e.g. ₹2,50,000 or ₹2.5L). Give a clear verdict (yes / no / risky) and one practical suggestion. No markdown headings or tables.`;
+let history=[];
+let sampleFn=null;
+async function ask(q){
+  q=(q||"").trim(); if(!q) return;
+  const btn=document.getElementById("askBtn"), inp=document.getElementById("askInput");
+  inp.value=""; addMsg("msg u",q);
+  if(!sampleFn){ addMsg("msg a","The AI agent isn't available in this view. Open the page from its claude.ai link to use it. The sliders and chart still work."); return; }
+  btn.disabled=true;
+  const out=addMsg("msg a","Thinking…");
+  history.push({role:"user",content:q});
+  const convo=[{role:"user",content:SYSTEM+"\n\n(Instructions above. Conversation starts now.)"},{role:"assistant",content:"Understood."},...history.slice(-8)];
+  try{
+    const res=await sampleFn(convo,{tools:TOOLS,cache:false,onText:({text})=>{ out.textContent=text; msgs.appendChild(out); msgs.scrollTop=msgs.scrollHeight; }});
+    out.textContent=res.text; msgs.appendChild(out); msgs.scrollTop=msgs.scrollHeight;
+    history.push({role:"assistant",content:res.text});
+  }catch(e){
+    out.textContent = e?.code==="not_granted" ? "The AI agent needs permission to run. Please allow it when asked, or open the page from its claude.ai link."
+      : e?.code==="rate_limited" ? "Too many questions at once. Please wait a moment and try again."
+      : "Sorry, something went wrong. Please try again.";
+    history.pop();
+  }finally{ btn.disabled=false; }
+}
+document.getElementById("askForm").onsubmit=e=>{ e.preventDefault(); ask(document.getElementById("askInput").value); };
+
+// ---------- start ----------
+loadPersona("founder"); renderUsage(); setLive(true);
+(async()=>{ try{ sampleFn = window.claude?.use ? await window.claude.use("sample") : null; }catch{ sampleFn=null; } })();
+</script>
+</body>
+</html>
